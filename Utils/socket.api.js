@@ -58,7 +58,7 @@ const socketAPI = {
   broadCastMany(message, socketIds) {
     if (io) {
       for (let index = 0; index < socketIds.length; index++) {
-        const element = socketIds[index];
+        const element = socketIds[index].trim();
         io.to(element).emit('socketClientEvent', message);
       }
       console.log('broadcastEvent successfully!');
@@ -70,6 +70,29 @@ const socketAPI = {
     try {
       const message = req.body.message;
       socketAPI.broadCastAll(message);
+      res.send({
+        status: 'success',
+        data: 'sent'
+      })
+    } catch (error) {
+      res.send({
+        status: error.message
+      })
+    }
+
+  },
+  broadCastToClient(req, res) {
+    try {
+      const message = req.body.message;
+      let socketIds = req.body.socketIds;
+      if (!socketIds) {
+        socketAPI.broadCastAll(message);  
+      }
+      else{
+        socketIds = socketIds.split(',');
+        console.log('socketIds: ', socketIds);
+        socketAPI.broadCastMany(message, socketIds);
+      }
       res.send({
         status: 'success',
         data: 'sent'
